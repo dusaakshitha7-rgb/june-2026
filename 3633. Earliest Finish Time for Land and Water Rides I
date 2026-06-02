@@ -1,0 +1,15 @@
+class Solution:
+    def earliestFinishTime(self, landStartTime, landDuration, waterStartTime, waterDuration):
+        ans = float('inf')
+        for i in range(len(landStartTime)):
+            ls = landStartTime[i]
+            ld = landDuration[i]
+            for j in range(len(waterStartTime)):
+                ws = waterStartTime[j]
+                wd = waterDuration[j]
+                land_finish = ls + ld
+                finish1 = max(land_finish, ws) + wd
+                water_finish = ws + wd
+                finish2 = max(water_finish, ls) + ld
+                ans = min(ans, finish1, finish2)
+        return ans

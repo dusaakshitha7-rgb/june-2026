@@ -1,0 +1,64 @@
+from bisect import bisect_right
+from math import inf
+
+class Solution:
+    def earliestFinishTime(self, landStartTime, landDuration, waterStartTime, waterDuration):
+        def build(starts, durations):
+            rides = sorted(zip(starts, durations))
+            s = [x[0] for x in rides]
+            d = [x[1] for x in rides]
+            n = len(rides)
+
+            pref_min_d = [0] * n
+            pref_min_d[0] = d[0]
+            for i in range(1, n):
+                pref_min_d[i] = min(pref_min_d[i - 1], d[i])
+
+            suff_min_sd = [0] * n
+            suff_min_sd[-1] = s[-1] + d[-1]
+            for i in range(n - 2, -1, -1):
+                suff_min_sd[i] = min(suff_min_sd[i + 1], s[i] + d[i])
+
+            return s, pref_min_d, suff_min_sd
+
+        def query(t, starts, pref_min_d, suff_min_sd):
+            idx = bisect_right(starts, t) - 1
+
+            res = inf
+
+            if idx >= 0:
+                res = min(res, t + pref_min_d[idx])
+
+            nxt = idx + 1
+            if nxt < len(starts):
+                res = min(res, suff_min_sd[nxt])
+
+            return res
+
+        water_s, water_pref_d, water_suff_sd = build(
+            waterStartTime, waterDuration
+        )
+
+        land_s, land_pref_d, land_suff_sd = build(
+            landStartTime, landDuration
+        )
+
+        ans = inf
+
+        # Land -> Water
+        for s, d in zip(landStartTime, landDuration):
+            finish_land = s + d
+            ans = min(
+                ans,
+                query(finish_land, water_s, water_pref_d, water_suff_sd)
+            )
+
+        # Water -> Land
+        for s, d in zip(waterStartTime, waterDuration):
+            finish_water = s + d
+            ans = min(
+                ans,
+                query(finish_water, land_s, land_pref_d, land_suff_sd)
+            )
+
+        return ans

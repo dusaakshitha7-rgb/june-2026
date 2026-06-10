@@ -1,0 +1,65 @@
+from typing import List
+from heapq import heappush, heappop
+
+class SparseTableRMQ:
+    def __init__(self, nums):
+        n = len(nums)
+
+        lg = [0] * (n + 1)
+        for i in range(2, n + 1):
+            lg[i] = lg[i >> 1] + 1
+
+        m = n.bit_length()
+
+        mx = [[0] * m for _ in range(n)]
+        mn = [[0] * m for _ in range(n)]
+
+        for i in range(n):
+            mx[i][0] = nums[i]
+            mn[i][0] = nums[i]
+
+        j = 1
+        while (1 << j) <= n:
+            length = 1 << j
+            half = length >> 1
+            for i in range(n - length + 1):
+                mx[i][j] = max(mx[i][j - 1], mx[i + half][j - 1])
+                mn[i][j] = min(mn[i][j - 1], mn[i + half][j - 1])
+            j += 1
+
+        self.lg = lg
+        self.mx = mx
+        self.mn = mn
+
+    def query_max(self, l, r):
+        k = self.lg[r - l + 1]
+        return max(self.mx[l][k], self.mx[r - (1 << k) + 1][k])
+
+    def query_min(self, l, r):
+        k = self.lg[r - l + 1]
+        return min(self.mn[l][k], self.mn[r - (1 << k) + 1][k])
+
+
+class Solution:
+    def maxTotalValue(self, nums: List[int], k: int) -> int:
+        n = len(nums)
+        st = SparseTableRMQ(nums)
+
+        pq = []
+
+        for l in range(n):
+            val = st.query_max(l, n - 1) - st.query_min(l, n - 1)
+            heappush(pq, (-val, l, n - 1))
+
+        ans = 0
+
+        for _ in range(k):
+            neg_val, l, r = heappop(pq)
+            ans += -neg_val
+
+            if r > l:
+                r -= 1
+                val = st.query_max(l, r) - st.query_min(l, r)
+                heappush(pq, (-val, l, r))
+
+        return ans

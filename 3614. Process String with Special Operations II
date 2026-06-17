@@ -1,0 +1,35 @@
+class Solution:
+    def processStr(self, s: str, k: int) -> str:
+        LIMIT = 10**15
+        n = len(s)
+        lengths = [0] * (n + 1)
+
+        cur = 0
+        for i, ch in enumerate(s):
+            if 'a' <= ch <= 'z':
+                cur += 1
+            elif ch == '*':
+                if cur > 0:
+                    cur -= 1
+            elif ch == '#':
+                cur = min(cur * 2, LIMIT)
+            lengths[i + 1] = cur
+
+        if k >= lengths[n]:
+            return '.'
+
+        for i in range(n - 1, -1, -1):
+            ch = s[i]
+            before = lengths[i]
+
+            if 'a' <= ch <= 'z':
+                if k == before:
+                    return ch
+            elif ch == '#':
+                if before > 0:
+                    k %= before
+            elif ch == '%':
+                if before > 0:
+                    k = before - 1 - k
+
+        return '.'

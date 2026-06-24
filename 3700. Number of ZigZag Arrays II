@@ -1,0 +1,38 @@
+class Solution:
+    def zigZagArrays(self, n: int, l: int, r: int) -> int:
+        MOD = 10**9 + 7
+        m = r - l + 1
+        sz = 2 * m
+        T = [[0] * sz for _ in range(sz)]
+        for x in range(m):
+            for y in range(x + 1, m):
+                T[y][m + x] = 1
+        for x in range(m):
+            for y in range(x):
+                T[m + y][x] = 1
+        def mul(A, B):
+            n = len(A)
+            C = [[0] * n for _ in range(n)]
+            for i in range(n):
+                for k in range(n):
+                    if A[i][k]:
+                        a = A[i][k]
+                        for j in range(n):
+                            C[i][j] = (C[i][j] + a * B[k][j]) % MOD
+            return C
+        def power(M, p):
+            n = len(M)
+            R = [[0] * n for _ in range(n)]
+            for i in range(n):
+                R[i][i] = 1
+            while p:
+                if p & 1:
+                    R = mul(R, M)
+                M = mul(M, M)
+                p >>= 1
+            return R
+        P = power(T, n - 1)
+        ans = 0
+        for row in P:
+            ans = (ans + sum(row)) % MOD
+        return ans

@@ -1,0 +1,21 @@
+class Solution:
+    def maximumLength(self, nums):
+        cnt = Counter(nums)
+        ans = 1
+        ones = cnt.get(1, 0)
+        if ones:
+            ans = max(ans, ones if ones % 2 else ones - 1)
+        for x in list(cnt.keys()):
+            if x == 1:
+                continue
+            cur = x
+            length = 0
+            while cnt.get(cur, 0) >= 2:
+                length += 2
+                cur = cur * cur
+            if cnt.get(cur, 0) >= 1:
+                length += 1
+            else:
+                length -= 1
+            ans = max(ans, length)
+        return ans
